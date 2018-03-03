@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace AndroidTabletButtonPadServer
+namespace Frontend
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,10 +23,6 @@ namespace AndroidTabletButtonPadServer
         public MainWindow()
         {
             InitializeComponent();
-
-            var blk = new Networking.NetDataBlockSerializationTest();
-
-            byte[] b = blk.Serialize();
         }
     }
 }
