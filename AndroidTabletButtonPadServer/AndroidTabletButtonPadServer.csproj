@@ -34,6 +34,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Nito.KitchenSink.CRC, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.KitchenSink.CRC.1.1.0\lib\net40-Client\Nito.KitchenSink.CRC.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.KitchenSink.HashAlgorithms, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.KitchenSink.HashAlgorithms.1.1.0\lib\net35-Client\Nito.KitchenSink.HashAlgorithms.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -68,6 +74,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Networking\NetDataBlock.cs" />
+    <Compile Include="Networking\NetDataBlockSerializationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -85,6 +93,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

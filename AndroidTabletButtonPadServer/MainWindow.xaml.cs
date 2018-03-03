@@ -23,6 +23,10 @@ namespace AndroidTabletButtonPadServer
         public MainWindow()
         {
             InitializeComponent();
+
+            var blk = new Networking.NetDataBlockSerializationTest();
+
+            byte[] b = blk.Serialize();
         }
     }
 }
