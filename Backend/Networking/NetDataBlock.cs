@@ -6,16 +6,20 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Backend.Networking
 {
     public static class NetDataBlocks
     {
+        [JsonObject(MemberSerialization.OptIn)]
         internal class NetDataBlockDef
         {
-            public Type type;
+            public string name;
+            [JsonProperty]
             public Guid guid;
             public Func<NetDataBlock> createFunc;
+            [JsonProperty]
             public HashSet<string> fields;
         }
 
@@ -24,7 +28,28 @@ namespace Backend.Networking
         internal static void AddBlockDef(NetDataBlockDef def)
         {
             if (!dataBlocks.ContainsKey(def.guid))
+            {
                 dataBlocks.Add(def.guid, def);
+
+                serializationDictOutdated = true;
+            }
+        }
+
+        internal static bool serializationDictOutdated = false;
+        internal static Dictionary<string, NetDataBlockDef> serializationDict = null;
+        public static string SerializeObjectDefs()
+        {
+            if (serializationDict == null || serializationDictOutdated)
+            {
+                serializationDict = new Dictionary<string, NetDataBlockDef>();
+
+                foreach (var kvp in dataBlocks)
+                    serializationDict.Add(kvp.Value.name, kvp.Value);
+
+                serializationDictOutdated = false;
+            }
+
+            return JsonConvert.SerializeObject(serializationDict, Formatting.None);
         }
 
         public static NetDataBlock Construct(Guid guid)
@@ -104,7 +129,7 @@ namespace Backend.Networking
 
             NetDataBlocks.NetDataBlockDef blockdef = new NetDataBlocks.NetDataBlockDef
             {
-                type = GetType(),
+                name = GetWellKnownName(),
                 guid = guid,
                 createFunc = GetCreationFunc(),
                 fields = new HashSet<string>()
@@ -124,6 +149,8 @@ namespace Backend.Networking
         }
 
         protected abstract Func<NetDataBlock> GetCreationFunc();
+
+        protected abstract string GetWellKnownName();
 
         protected sealed class PropertyCallbacks
         {

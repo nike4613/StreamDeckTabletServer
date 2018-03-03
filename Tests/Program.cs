@@ -16,7 +16,7 @@ namespace Tests
                 str = "HBell;"
             };
 
-
+            var json = NetDataBlocks.SerializeObjectDefs();
 
             var data = NetDataBlocks.Serialize(new NetDataBlock[] { toserial, toserial });
 

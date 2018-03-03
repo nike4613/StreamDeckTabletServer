@@ -19,13 +19,13 @@ namespace Backend.Networking
         {
             return new Dictionary<string, PropertyCallbacks>()
             {
-                { "string",
+                { "f_str",
                     new PropertyCallbacks() {
                         Serializer = () => Encoding.ASCII.GetBytes(str),
                         Deserializer = (b) => str = Encoding.ASCII.GetString(b),
                     }
                 },
-                { "int",
+                { "f_int",
                     new PropertyCallbacks() {
                         Serializer = () => BitConverter.GetBytes(data),
                         Deserializer = (b) => data = BitConverter.ToInt32(b,0),
@@ -37,6 +37,11 @@ namespace Backend.Networking
         protected override Func<NetDataBlock> GetCreationFunc()
         {
             return () => new NetDataBlockSerializationTest();
+        }
+
+        protected override string GetWellKnownName()
+        {
+            return "SerializationTest";
         }
 
         public int data = 4135789;
