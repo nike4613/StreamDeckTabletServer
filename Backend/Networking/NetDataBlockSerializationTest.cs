@@ -6,42 +6,38 @@ using System.Threading.Tasks;
 
 namespace Backend.Networking
 {
+    [NetworkDataBlock("SerializationTest")]
     public class NetDataBlockSerializationTest : NetDataBlock
     {
         static Guid guid = Guid.NewGuid();
 
-        public NetDataBlockSerializationTest() : base(guid)
+        static NetDataBlockSerializationTest()
         {
-
+            RegisterBlock(typeof(NetDataBlockSerializationTest), guid);
         }
 
-        protected override Dictionary<string, PropertyCallbacks> GetProperties()
+        protected static Dictionary<string, PropertyCallbacks> GetProperties()
         {
             return new Dictionary<string, PropertyCallbacks>()
             {
                 { "f_str",
                     new PropertyCallbacks() {
-                        Serializer = () => Encoding.ASCII.GetBytes(str),
-                        Deserializer = (b) => str = Encoding.ASCII.GetString(b),
+                        Serializer = self => Encoding.ASCII.GetBytes(((NetDataBlockSerializationTest)self).str),
+                        Deserializer = (self, b) => ((NetDataBlockSerializationTest)self).str = Encoding.ASCII.GetString(b),
                     }
                 },
                 { "f_int",
                     new PropertyCallbacks() {
-                        Serializer = () => BitConverter.GetBytes(data),
-                        Deserializer = (b) => data = BitConverter.ToInt32(b,0),
+                        Serializer = self => BitConverter.GetBytes(((NetDataBlockSerializationTest)self).data),
+                        Deserializer = (self, b) => ((NetDataBlockSerializationTest)self).data = BitConverter.ToInt32(b,0),
                     }
                 },
             };
         }
 
-        protected override Func<NetDataBlock> GetCreationFunc()
+        protected static NetDataBlock Create()
         {
-            return () => new NetDataBlockSerializationTest();
-        }
-
-        protected override string GetWellKnownName()
-        {
-            return "SerializationTest";
+            return new NetDataBlockSerializationTest();
         }
 
         public int data = 4135789;

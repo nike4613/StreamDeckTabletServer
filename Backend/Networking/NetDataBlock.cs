@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Backend.Networking
 {
@@ -117,45 +118,85 @@ namespace Backend.Networking
         }
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class NetworkDataBlockAttribute : Attribute
+    {
+        internal string name;
+
+        public NetworkDataBlockAttribute(string name)
+        {
+            this.name = name;
+        }
+    }
+
     public abstract class NetDataBlock
     {
         private Guid TypeGUID;
         private Dictionary<UInt32, PropertyCallbacks> CRCSerializer = new Dictionary<UInt32, PropertyCallbacks>();
         protected internal static byte[] serializedHeader = Encoding.ASCII.GetBytes("NET-dObj");
 
-        public NetDataBlock(Guid guid)
+        private static Dictionary<Type, Guid> guidLookup = new Dictionary<Type, Guid>();
+
+        public static void RegisterBlock(Type type, Guid guid)
         {
-            TypeGUID = guid;
+            var attr = (NetworkDataBlockAttribute)type.GetCustomAttributes(typeof(NetworkDataBlockAttribute), false).First();
+
+            var m = type.GetMethod("Create", BindingFlags.Static, null, new Type[] { }, new ParameterModifier[] { });
+            if (!type.IsAssignableFrom(m.ReturnType))
+            {
+                throw new ArgumentException("Static method 'Create' on type " + type.ToString() + " does not return correct type!");
+            }
 
             NetDataBlocks.NetDataBlockDef blockdef = new NetDataBlocks.NetDataBlockDef
             {
-                name = GetWellKnownName(),
+                name = attr.name,
                 guid = guid,
-                createFunc = GetCreationFunc(),
+                createFunc = (Func<NetDataBlock>) Delegate.CreateDelegate(typeof(Func<NetDataBlock>), m),
                 fields = new HashSet<string>()
             };
 
-            var props = GetProperties();
-            foreach (var e in props) {
-                CRC32 crc = new CRC32();
-                crc.ComputeHash(Encoding.ASCII.GetBytes(e.Key));
-                CRCSerializer.Add(BitConverter.ToUInt32(crc.Hash, 0), e.Value);
-
+            var props = GetPropertiesFor(type);
+            foreach (var e in props)
                 blockdef.fields.Add(e.Key);
-            }
 
             if (!NetDataBlocks.dataBlocks.ContainsKey(guid))
                 NetDataBlocks.AddBlockDef(blockdef);
+
+            guidLookup.Add(type, guid);
         }
 
-        protected abstract Func<NetDataBlock> GetCreationFunc();
-
-        protected abstract string GetWellKnownName();
-
-        protected sealed class PropertyCallbacks
+        private static Dictionary<string, PropertyCallbacks> GetPropertiesFor(Type t)
         {
-            public Func<byte[]> Serializer { get; set; }
-            public Action<byte[]> Deserializer { get; set; }
+            var m = t.GetMethod("GetProperties", BindingFlags.Static, null, new Type[] { }, new ParameterModifier[] { });
+            if (typeof(Dictionary<string, PropertyCallbacks>).IsAssignableFrom(m.ReturnType))
+            {
+                return (Dictionary<string, PropertyCallbacks>) m.Invoke(null, new object[] { });
+            }
+            else
+            {
+                throw new ArgumentException("Static method 'GetProperties' on type " + t.ToString() + " does not return correct type!");
+            }
+        }
+
+        public NetDataBlock()
+        {
+            var guid = guidLookup[GetType()];
+
+            TypeGUID = guid;
+
+            var props = GetPropertiesFor(GetType());
+            foreach (var e in props)
+            {
+                CRC32 crc = new CRC32();
+                crc.ComputeHash(Encoding.ASCII.GetBytes(e.Key));
+                CRCSerializer.Add(BitConverter.ToUInt32(crc.Hash, 0), e.Value);
+            }
+        }
+
+        public sealed class PropertyCallbacks
+        {
+            public Func<NetDataBlock, byte[]> Serializer { get; set; }
+            public Action<NetDataBlock, byte[]> Deserializer { get; set; }
         }
 
         /// <summary>
@@ -163,7 +204,7 @@ namespace Backend.Networking
         /// Must be able to be called when default constructor is called.
         /// </summary>
         /// <returns>a mapping of property to serializer</returns>
-        protected abstract Dictionary<string, PropertyCallbacks> GetProperties(); 
+        //protected abstract Dictionary<string, PropertyCallbacks> GetProperties(); 
 
 
         // serializes to little-endian
