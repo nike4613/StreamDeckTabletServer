@@ -1,4 +1,5 @@
 ﻿using Backend.Networking;
+using Backend.Networking.DataBlocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +12,17 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            var toserial = new NetDataBlockSerializationTest
+            var toserial = new ButtonSizeUpdateBlock
             {
-                str = "HBell;"
+                buttonX = 0,
+                buttonY = 0,
+                newSizeH = 2,
+                newSizeW = 3,
             };
 
             var json = NetDataBlocks.SerializeObjectDefs();
 
-            var data = NetDataBlocks.Serialize(new NetDataBlock[] { toserial, toserial });
+            var data = NetDataBlocks.Serialize(new NetDataBlock[] { toserial });
 
             var deserial = NetDataBlocks.Deserialize(data);
         }

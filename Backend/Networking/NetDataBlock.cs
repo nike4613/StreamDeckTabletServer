@@ -141,7 +141,9 @@ namespace Backend.Networking
         {
             var attr = (NetworkDataBlockAttribute)type.GetCustomAttributes(typeof(NetworkDataBlockAttribute), false).First();
 
-            var m = type.GetMethod("Create", BindingFlags.Static, null, new Type[] { }, new ParameterModifier[] { });
+            var m = type.GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
+            if (m == null)
+                throw new ArgumentException("No static method 'Create' on type " + type.ToString() + "!");
             if (!type.IsAssignableFrom(m.ReturnType))
             {
                 throw new ArgumentException("Static method 'Create' on type " + type.ToString() + " does not return correct type!");
@@ -167,7 +169,9 @@ namespace Backend.Networking
 
         private static Dictionary<string, PropertyCallbacks> GetPropertiesFor(Type t)
         {
-            var m = t.GetMethod("GetProperties", BindingFlags.Static, null, new Type[] { }, new ParameterModifier[] { });
+            var m = t.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
+            if (m == null)
+                throw new ArgumentException("No static method 'GetProperties' on type " + t.ToString() + "!");
             if (typeof(Dictionary<string, PropertyCallbacks>).IsAssignableFrom(m.ReturnType))
             {
                 return (Dictionary<string, PropertyCallbacks>) m.Invoke(null, new object[] { });
@@ -213,14 +217,6 @@ namespace Backend.Networking
                 return Serializer((T)self);
             }
         }
-
-        /// <summary>
-        /// Gets properties and functions to serialize. 
-        /// Must be able to be called when default constructor is called.
-        /// </summary>
-        /// <returns>a mapping of property to serializer</returns>
-        //protected abstract Dictionary<string, PropertyCallbacks> GetProperties(); 
-
 
         // serializes to little-endian
         public byte[] Serialize()
