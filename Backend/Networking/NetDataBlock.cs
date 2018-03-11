@@ -143,9 +143,7 @@ namespace Backend.Networking
             if (m == null)
                 throw new ArgumentException("No static method 'Create' on type " + type.ToString() + "!");
             if (!type.IsAssignableFrom(m.ReturnType))
-            {
                 throw new ArgumentException("Static method 'Create' on type " + type.ToString() + " does not return correct type!");
-            }
 
             NetDataBlocks.NetDataBlockDef blockdef = new NetDataBlocks.NetDataBlockDef
             {
@@ -273,7 +271,9 @@ namespace Backend.Networking
                 int dataLen = binread.ReadInt32();
                 var data = binread.ReadBytes(dataLen);
 
-                CRCSerializer[crc].Deserialize(this, data);
+                // only deserialize if recognised
+                if (CRCSerializer.ContainsKey(crc))
+                    CRCSerializer[crc].Deserialize(this, data);
             }
         }
     }
