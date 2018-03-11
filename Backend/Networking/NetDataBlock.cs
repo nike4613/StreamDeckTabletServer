@@ -131,8 +131,6 @@ namespace Backend.Networking
 
     public abstract class NetDataBlock
     {
-        private Guid TypeGUID;
-        private Dictionary<UInt32, PropertyCallbacks> CRCSerializer = new Dictionary<UInt32, PropertyCallbacks>();
         protected internal static byte[] serializedHeader = Encoding.ASCII.GetBytes("NET-dObj");
 
         private static Dictionary<Type, Guid> guidLookup = new Dictionary<Type, Guid>();
@@ -182,21 +180,6 @@ namespace Backend.Networking
             }
         }
 
-        public NetDataBlock()
-        {
-            var guid = guidLookup[GetType()];
-
-            TypeGUID = guid;
-
-            var props = GetPropertiesFor(GetType());
-            foreach (var e in props)
-            {
-                CRC32 crc = new CRC32();
-                crc.ComputeHash(Encoding.ASCII.GetBytes(e.Key));
-                CRCSerializer.Add(BitConverter.ToUInt32(crc.Hash, 0), e.Value);
-            }
-        }
-
         public abstract class PropertyCallbacks
         {
             internal abstract byte[] Serialize(NetDataBlock self);
@@ -215,6 +198,24 @@ namespace Backend.Networking
             internal override byte[] Serialize(NetDataBlock self)
             {
                 return Serializer((T)self);
+            }
+        }
+
+        private Guid TypeGUID;
+        private Dictionary<UInt32, PropertyCallbacks> CRCSerializer = new Dictionary<UInt32, PropertyCallbacks>();
+
+        public NetDataBlock()
+        {
+            var guid = guidLookup[GetType()];
+
+            TypeGUID = guid;
+
+            var props = GetPropertiesFor(GetType());
+            foreach (var e in props)
+            {
+                CRC32 crc = new CRC32();
+                crc.ComputeHash(Encoding.ASCII.GetBytes(e.Key));
+                CRCSerializer.Add(BitConverter.ToUInt32(crc.Hash, 0), e.Value);
             }
         }
 
