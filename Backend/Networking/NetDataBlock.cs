@@ -193,10 +193,25 @@ namespace Backend.Networking
             }
         }
 
-        public sealed class PropertyCallbacks
+        public abstract class PropertyCallbacks
         {
-            public Func<NetDataBlock, byte[]> Serializer { get; set; }
-            public Action<NetDataBlock, byte[]> Deserializer { get; set; }
+            internal abstract byte[] Serialize(NetDataBlock self);
+            internal abstract void Deserialize(NetDataBlock self, byte[] data);
+        }
+        public sealed class PropertyCallbacks<T> : PropertyCallbacks where T : NetDataBlock
+        {
+            public Func<T, byte[]> Serializer { get; set; }
+            public Action<T, byte[]> Deserializer { get; set; }
+
+            internal override void Deserialize(NetDataBlock self, byte[] data)
+            {
+                Deserializer((T) self, data);
+            }
+
+            internal override byte[] Serialize(NetDataBlock self)
+            {
+                return Serializer((T)self);
+            }
         }
 
         /// <summary>
@@ -226,7 +241,7 @@ namespace Backend.Networking
             foreach (var prop in CRCSerializer)
             {
                 binwrite.Write(prop.Key); // write CRC
-                byte[] serialized = prop.Value.Serializer(); // get data
+                byte[] serialized = prop.Value.Serialize(this); // get data
                 binwrite.Write(serialized.Length); // write data length
                 binwrite.Write(serialized); // write data;
             }
@@ -261,7 +276,7 @@ namespace Backend.Networking
                 int dataLen = binread.ReadInt32();
                 var data = binread.ReadBytes(dataLen);
 
-                CRCSerializer[crc].Deserializer(data);
+                CRCSerializer[crc].Deserialize(this, data);
             }
         }
     }

@@ -21,15 +21,15 @@ namespace Backend.Networking
             return new Dictionary<string, PropertyCallbacks>()
             {
                 { "f_str",
-                    new PropertyCallbacks() {
-                        Serializer = self => Encoding.ASCII.GetBytes(((NetDataBlockSerializationTest)self).str),
-                        Deserializer = (self, b) => ((NetDataBlockSerializationTest)self).str = Encoding.ASCII.GetString(b),
+                    new PropertyCallbacks<NetDataBlockSerializationTest>() {
+                        Serializer = self => Encoding.ASCII.GetBytes(self.str),
+                        Deserializer = (self, b) => self.str = Encoding.ASCII.GetString(b),
                     }
                 },
                 { "f_int",
-                    new PropertyCallbacks() {
-                        Serializer = self => BitConverter.GetBytes(((NetDataBlockSerializationTest)self).data),
-                        Deserializer = (self, b) => ((NetDataBlockSerializationTest)self).data = BitConverter.ToInt32(b,0),
+                    new PropertyCallbacks<NetDataBlockSerializationTest>() {
+                        Serializer = self => BitConverter.GetBytes(self.data),
+                        Deserializer = (self, b) => self.data = BitConverter.ToInt32(b,0),
                     }
                 },
             };
