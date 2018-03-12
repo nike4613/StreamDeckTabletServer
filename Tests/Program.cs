@@ -12,6 +12,8 @@ namespace Tests
     {
         static void Main(string[] args)
         {
+            NetDataBlockSerializationTest block = NetDataBlockSerializationTest.Create();
+
             var toserial = new ButtonSizeUpdateBlock
             {
                 buttonX = 0,
@@ -22,7 +24,7 @@ namespace Tests
 
             var json = NetDataBlocks.SerializeObjectDefs();
 
-            var data = NetDataBlocks.Serialize(new NetDataBlock[] { toserial });
+            var data = NetDataBlocks.Serialize(new NetDataBlock[] { toserial, block});
 
             var deserial = NetDataBlocks.Deserialize(data);
         }

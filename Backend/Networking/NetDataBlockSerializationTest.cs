@@ -20,13 +20,13 @@ namespace Backend.Networking
         {
             return new Dictionary<string, PropertyCallbacks>()
             {
-                { "f_str",
+                { "str",
                     new PropertyCallbacks<NetDataBlockSerializationTest>() {
                         Serializer = self => Encoding.ASCII.GetBytes(self.str),
                         Deserializer = (self, b) => self.str = Encoding.ASCII.GetString(b),
                     }
                 },
-                { "f_int",
+                { "int",
                     new PropertyCallbacks<NetDataBlockSerializationTest>() {
                         Serializer = self => BitConverter.GetBytes(self.data),
                         Deserializer = (self, b) => self.data = BitConverter.ToInt32(b,0),
@@ -35,7 +35,7 @@ namespace Backend.Networking
             };
         }
 
-        protected static NetDataBlock Create()
+        public static NetDataBlockSerializationTest Create()
         {
             return new NetDataBlockSerializationTest();
         }
